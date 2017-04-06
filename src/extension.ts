@@ -78,9 +78,11 @@ export function activate(context: vscode.ExtensionContext) {
             statement = `var ${moduleName} = appRequire('${result.detail}');\n`
         } else {
             // is a module, don't use appRequire
-            statement = `var ${result.label} = require('${result.label}');`
             if (!result.label.startsWith('react')) {
+                statement = `var ${result.label} = require('${result.label}');\n`
                 mod = true;
+            } else {
+                statement = `var ${result.label[0].toUpperCase()}${result.label.slice(1)} = require('${result.label}');\n`
             }
         }
 
@@ -156,9 +158,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         modifyCurrentDocument(doc.lineAt(pos).range.start, statement);
-        
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World! ' + vscode.workspace.rootPath + ': ' + JSON.stringify(result));
     });
 
     context.subscriptions.push(disposable);
