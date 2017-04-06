@@ -17,10 +17,15 @@
   "main": "./out/src/extension",
   "contributes": {
     "keybindings": [{
-        "command": "mori.copyrightHeader",
-        "key": "ctrl+shift+c",
-        "mac": "ctrl+shift+c",
-        "when": "editorTextFocus"
+      "command": "mori.copyrightHeader",
+      "key": "ctrl+shift+c",
+      "mac": "ctrl+shift+c",
+      "when": "editorTextFocus"
+    },{
+      "command": "mori.importAndRequire",
+      "key": "alt+shift+p",
+      "mac": "cmd+shift+p",
+      "when": "editorTextFocus"
     }],
     "commands": [
       {
