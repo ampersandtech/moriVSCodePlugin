@@ -19,8 +19,8 @@ let gRegs = {
         },
     },
     ts: {
-        module: /import\W+(?:\*\W+)(?:{[^}]*}\W+)(?:as\W+([a-z])\w+)\W+from\W+'(\w+)';/,
-        file: /import\W+(?:\*\W+)(?:{[^}]*}\W+)(?:as\W+([A-Z])\w+)\W+from\W+'(\w+)';/,
+        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{[A-Z][^}]+})?\s+from\s+'([^']+)';/,
+        file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{[A-Z][^}]+})?\s+from\s+'([^']+)';/,
         moduleStatement: function(moduleName, filePath) {
             return `import * as ${moduleName} from '${filePath}';\n`;
         },
