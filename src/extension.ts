@@ -19,7 +19,7 @@ let gRegs = {
         },
     },
     ts: {
-        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{[A-Z][^}]+})?\s+from\s+'([^']+)';/,
+        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{[a-z][^}]+})?\s+from\s+'([^']+)';/,
         file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{[A-Z][^}]+})?\s+from\s+'([^']+)';/,
         moduleStatement: function(moduleName, filePath) {
             return `import * as ${moduleName} from '${filePath}';\n`;
