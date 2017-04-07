@@ -11,12 +11,24 @@ let gRegs = {
     js: {
         module: /var\W+([a-z]\w*)\W+=\W+require\('([\w./\//]+)'\);/,
         file: /var\W+([A-Z]\w*)\W+=\W+(?:app)?[rR]equire\('([\w./\//]+)'\);/,
+        moduleStatement: function(moduleName, filePath) {
+            return `var ${moduleName} = require('${filePath}');\n`;
+        },
+        fileStatement: function(moduleName, filePath) {
+            return `var ${moduleName} = appRequire('${filePath}');\n`
+        },
+    },
+    ts: {
+        module: /import\W+(?:\*\W+)(?:{[^}]*}\W+)(?:as\W+([a-z])\w+)\W+from\W+'(\w+)';/,
+        file: /import\W+(?:\*\W+)(?:{[^}]*}\W+)(?:as\W+([A-Z])\w+)\W+from\W+'(\w+)';/,
+        moduleStatement: function(moduleName, filePath) {
+            return `import * as ${moduleName} from '${filePath}';\n`;
+        },
+        fileStatement: function(moduleName, filePath) {
+            return `import * as ${moduleName} from '${filePath}';\n`;
+        },
     },
 };
-
-let renames = {
-
-}
 
 const coreModules = [
     "assert",
@@ -127,6 +139,21 @@ export function activate(context: vscode.ExtensionContext) {
     // The commandId parameter must match the command field in package.json
     let disposable = vscode.commands.registerCommand('mori.importAndRequire', async () => {
         // The code you place here will be executed every time your command is executed
+        var fileName = vscode.window.activeTextEditor.document.fileName;
+        if (fileName.lastIndexOf('.') === -1) {
+            vscode.window.showErrorMessage('Unable to use import until an extension is specified');
+            return;
+        }
+        var ext = fileName.slice(fileName.lastIndexOf('.')+1);
+        var reg;
+        if (ext === 'js' || ext === 'jsx') {
+            reg = gRegs.js;
+        } else if (ext === 'ts' || ext === 'tsx') {
+            reg = gRegs.ts;
+        } else {
+            vscode.window.showErrorMessage('Unable to use import on files with extension of ' + ext);
+            return;
+        }
 
         // this needs to be made faster
         const files = await vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '/{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror}/**');
@@ -189,22 +216,21 @@ export function activate(context: vscode.ExtensionContext) {
             if (filePath.endsWith('.js')) {
                 filePath = filePath.slice(0, -3);
             }
-            statement = `var ${moduleName} = appRequire('${filePath}');\n`
+            statement = reg.fileStatement(moduleName, filePath);
         } else {
             // is a module, don't use appRequire
             if (!result.label.startsWith('react')) {
-                statement = `var ${label} = require('${result.label}');\n`
+                statement = reg.moduleStatement(label, result.label);
                 mod = true;
             } else {
                 label = label[0].toUpperCase() + label.slice(1);
-                statement = `var ${label} = require('${result.label}');\n`
+                statement = reg.moduleStatement(label, result.label);
             }
         }
 
         var pos = 0;
         var doc = vscode.window.activeTextEditor.document;
         var foundOthers : boolean = false;
-        var reg = gRegs.js;
 
         for (var i=0;i<doc.lineCount;i++) {
             let line = doc.lineAt(i);
