@@ -24,7 +24,7 @@
     },{
       "command": "mori.importAndRequire",
       "key": "alt+shift+p",
-      "mac": "cmd+shift+p",
+      "mac": "ctrl+shift+p",
       "when": "editorTextFocus"
     }],
     "commands": [
