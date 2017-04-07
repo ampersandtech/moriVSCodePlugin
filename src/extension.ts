@@ -213,6 +213,10 @@ export function activate(context: vscode.ExtensionContext) {
                 pos = i + 1;
             }
 
+            if (line.text.match(/^\/\* eslint-disable.*\*\/$/)) {
+                pos = i + 1;
+            }
+
             if (line.text.trim() === '') {
                 if (foundOthers) {
                     break;
