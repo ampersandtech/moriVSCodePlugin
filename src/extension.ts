@@ -156,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // this needs to be made faster
-        const files = await vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror}/**');
+        const files = await vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror,dist}/**');
 
         if (!files) {
             vscode.window.showErrorMessage('Unable to find any files! Did you open a project?');
