@@ -19,8 +19,8 @@ let gRegs = {
         },
     },
     ts: {
-        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{[a-z][^}]+})?\s+from\s+'([^']+)';/,
-        file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{[A-Z][^}]+})?\s+from\s+'([^']+)';/,
+        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{\s+[a-z][^}]+})?\s+from\s+'([^']+)';/,
+        file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{\s+[A-Z][^}]+})?\s+from\s+'([^']+)';/,
         moduleStatement: function(moduleName, filePath) {
             return `import * as ${moduleName} from '${filePath}';\n`;
         },
@@ -76,9 +76,69 @@ let gAlias = {
 
 let gSpecialChar = /([^\W\d_]+)(\d*)([\W_]?)([\w]?)(.*)/; //hmmm... might need a better one... this one goes on forever!
 
+let fileCache : Thenable<{label: string, description: string, detail: string}[]> | {label: string, description: string, detail: string}[];
+
+function readDirPromise(path) {
+    return new Promise((resolve, reject) => {
+        try {
+            fs.readdir(path, (items) => {
+                resolve(items);
+            });
+        } catch(e) {
+            reject(e);
+        }
+    })
+}
+
+function findAllFiles(rootPath) {
+    fileCache = new Promise((resolve, reject) => {
+        var pack;
+
+        try {
+            pack = JSON.parse(fs.readFileSync(rootPath + '/package.json').toString());
+        } catch(e) {
+            vscode.window.showWarningMessage(`Unable to load ${rootPath}/package.json!`, e);
+        }
+        
+        let projectMods = [];
+
+        if (pack && pack.dependencies) {
+            for (var dep in pack.dependencies) {
+                projectMods.push({
+                    label: dep,
+                    description: pack.dependencies[dep],
+                    detail: 'dependency',
+                });
+            }
+        }
+
+        var filePromise = vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror,dist}/**');
+
+        filePromise.then(files => {
+            resolve(files.map(file => {
+                const lastSlash = file.path.lastIndexOf('/');
+                return {
+                    label: file.path.substr(lastSlash + 1),
+                    description: '',
+                    detail: file.path.slice(rootPath.length + 1),
+                };
+            }).concat(gNodeMods).concat(projectMods).sort(function(a, b) {
+                if (a.label === b.label) {
+                    return 0;
+                } else if (a.label > b.label) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }));
+        });
+    });
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    findAllFiles(vscode.workspace.rootPath);
 
     function modifyCurrentDocument(pos: vscode.Position, content: string) {
         if (!vscode.window.activeTextEditor) {
@@ -91,9 +151,21 @@ export function activate(context: vscode.ExtensionContext) {
         });
     }
 
+    function getCurrentExt() : string {
+        var fileName = vscode.window.activeTextEditor.document.fileName;
+
+        return fileName ? fileName.slice(fileName.lastIndexOf('.')+1) : '';
+    }
+
     let coprightHeader = vscode.commands.registerCommand('mori.copyrightHeader', async () => {
         var year = moment(Date.now()).year();
-        var copy = `/**\n* Copyright ${year}-present Mori, Inc.\n*\n*/\n'use strict';\n\n`
+        var copy = `/**\n* Copyright ${year}-present Mori, Inc.\n*\n*/\n`
+        var ext = getCurrentExt();
+        if (ext === 'js' || ext ==='jsx') {
+            copy += `use strict';\n\n`;
+        } else {
+            copy += `\n`;
+        }
         return modifyCurrentDocument(new vscode.Position(0,0), copy);
     });
 
@@ -137,70 +209,31 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('mori.importAndRequire', async () => {
+    let importAndRequire = vscode.commands.registerCommand('mori.importAndRequire', async () => {
+        var time = Date.now();
         // The code you place here will be executed every time your command is executed
         var fileName = vscode.window.activeTextEditor.document.fileName;
         if (fileName.lastIndexOf('.') === -1) {
             vscode.window.showErrorMessage('Unable to use import until an extension is specified');
             return;
         }
+
         var ext = fileName.slice(fileName.lastIndexOf('.')+1);
         var reg;
+        var isTS = false;
         if (ext === 'js' || ext === 'jsx') {
             reg = gRegs.js;
         } else if (ext === 'ts' || ext === 'tsx') {
             reg = gRegs.ts;
+            isTS = true;
         } else {
             vscode.window.showErrorMessage('Unable to use import on files with extension of ' + ext);
             return;
         }
 
-        // this needs to be made faster
-        const files = await vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror,dist}/**');
-
-        if (!files) {
-            vscode.window.showErrorMessage('Unable to find any files! Did you open a project?');
-            return;
-        }
+        const files = fileCache;
         
-        const root = vscode.workspace.rootPath;
-        var pack;
-        try {
-            pack = JSON.parse(fs.readFileSync(vscode.workspace.rootPath + '/package.json').toString());
-        } catch(e) {
-            vscode.window.showWarningMessage(`Unable to load ${vscode.workspace.rootPath}/package.json!`, e);
-        }
-        
-        let projectMods = [];
-
-        if (pack && pack.dependencies) {
-            for (var dep in pack.dependencies) {
-                projectMods.push({
-                    label: dep,
-                    description: pack.dependencies[dep],
-                    detail: 'dependency',
-                });
-            }
-        }
-        
-        const choices = files.map(file => {
-            const lastSlash = file.path.lastIndexOf('/');
-            return {
-                label: file.path.substr(lastSlash + 1),
-                description: '',
-                detail: file.path.slice(root.length + 1),
-            };
-        }).concat(gNodeMods).concat(projectMods).sort(function(a, b) {
-            if (a.label === b.label) {
-                return 0;
-            } else if (a.label > b.label) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-        
-        let result = await vscode.window.showQuickPick(choices, {matchOnDetail: true});
+        let result = await vscode.window.showQuickPick(fileCache, {matchOnDetail: true});
 
         if (!result) {
             return;
@@ -209,28 +242,43 @@ export function activate(context: vscode.ExtensionContext) {
         var mod = false;
         var statement;
         var label = aliasLabel(result.label);
+        var sortName;
         let filePath = result.detail;
+
         if (!result.description) {
             label = label[0].toUpperCase() + label.slice(1);
             let moduleName = `${label}`;
             if (filePath.endsWith('.js')) {
                 filePath = filePath.slice(0, -3);
             }
+            sortName = filePath;
             statement = reg.fileStatement(moduleName, filePath);
         } else {
             // is a module, don't use appRequire
             if (!result.label.startsWith('react')) {
                 statement = reg.moduleStatement(label, result.label);
+                sortName = result.label;
                 mod = true;
             } else {
                 label = label[0].toUpperCase() + label.slice(1);
                 statement = reg.moduleStatement(label, result.label);
+                sortName = result.label;
             }
         }
 
         var pos = 0;
         var doc = vscode.window.activeTextEditor.document;
         var foundOthers : boolean = false;
+
+        function checkSorted(a, b) {
+            if (a.indexOf('.') === -1) {
+                a += '.js';
+            }
+            if (b.indexOf('.') === -1) {
+                b += '.js';
+            }
+            return a.slice(a.lastIndexOf('/')+1).toLowerCase() > b.slice(b.lastIndexOf('/')+1).toLowerCase();
+        }
 
         for (var i=0;i<doc.lineCount;i++) {
             let line = doc.lineAt(i);
@@ -254,12 +302,19 @@ export function activate(context: vscode.ExtensionContext) {
                     var m = line.text.match(reg.module);
 
                     if (m) {
+                        var sortBy;
+
+                        if (isTS) {
+                            sortBy = m[2];
+                        } else {
+                            sortBy = m[1]
+                        }
                         foundOthers = true;
                         if (m[2] === result.label) {
                             //Already added
                             return;
                         }
-                        if (m[1] > result.label) {
+                        if (sortBy > sortName.label) {
                             pos = i;
                             break;
                         } else {
@@ -272,12 +327,20 @@ export function activate(context: vscode.ExtensionContext) {
                     var m = line.text.match(reg.file);
 
                     if (m) {
+                        var sortBy;
+
+                        if (isTS) {
+                            sortBy = m[2];
+                        } else {
+                            sortBy = m[1]
+                        }
+                        
                         foundOthers = true;
                         if (m[2] === filePath || m[2] === result.detail) {
                             //Already added
                             return;
                         }
-                        if (m[1].toLowerCase() > label.toLowerCase()) {
+                        if (checkSorted(sortBy,sortName)) {
                             pos=i;
                             break;
                         } else {
@@ -315,7 +378,7 @@ export function activate(context: vscode.ExtensionContext) {
         modifyCurrentDocument(doc.lineAt(pos).range.start, statement);
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(importAndRequire);
     context.subscriptions.push(coprightHeader);
 }
 
