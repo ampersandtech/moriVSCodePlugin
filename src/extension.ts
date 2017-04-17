@@ -19,8 +19,8 @@ let gRegs = {
         },
     },
     ts: {
-        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{\s+[a-z][^}]+})?\s+from\s+'([^']+)';/,
-        file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{\s+[A-Z][^}]+})?\s+from\s+'([^']+)';/,
+        module: /import\s+(?:\*\s+as\s+([a-z]\w+))?(?:{\s*[a-z][^}]+})?\s+from\s+'([^']+)';/,
+        file: /import\s+(?:\*\s+as\s+([A-Z]\w+))?(?:{\s*[A-Z][^}]+})?\s+from\s+'([^']+)';/,
         moduleStatement: function(moduleName, filePath) {
             return `import * as ${moduleName} from '${filePath}';\n`;
         },
@@ -251,7 +251,12 @@ export function activate(context: vscode.ExtensionContext) {
             if (filePath.endsWith('.js')) {
                 filePath = filePath.slice(0, -3);
             }
-            sortName = filePath;
+            if (isTS) {
+                sortName = filePath;
+            } else {
+                sortName = moduleName;
+            }
+            
             statement = reg.fileStatement(moduleName, filePath);
         } else {
             // is a module, don't use appRequire
@@ -267,8 +272,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         var pos = 0;
+        var inComment = false;
         var doc = vscode.window.activeTextEditor.document;
         var foundOthers : boolean = false;
+        var foundCode : boolean = false;
 
         function checkSorted(a, b) {
             if (a.indexOf('.') === -1) {
@@ -283,13 +290,42 @@ export function activate(context: vscode.ExtensionContext) {
         for (var i=0;i<doc.lineCount;i++) {
             let line = doc.lineAt(i);
 
+            if (line.text.trim() === '') {
+                continue;
+            }
+
             if (line.text === `'use strict';`) {
                 pos = i + 1;
+                continue;
+            }
+
+            if (!foundCode && line.text.match(/\s*\\\*/)) {
+                inComment = true;
+                continue;
+            }
+
+            if (inComment && line.text.match(/\*\//)) {
+                inComment = false;
+                pos = i + 1;
+                continue;
+            }
+
+            if (!foundCode && line.text.match(/\s*\/\//)) {
+                pos = i + 1;
+                continue;
+            }
+
+            if (pos === 0 && line.text.trim() === '*/') {
+                pos = i + 1;
+                continue;
             }
 
             if (line.text.match(/^\/\* eslint-disable.*\*\/$/)) {
                 pos = i + 1;
+                continue;
             }
+
+            foundCode = true;
 
             if (line.text.trim() === '') {
                 if (foundOthers) {
