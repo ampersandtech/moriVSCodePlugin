@@ -91,8 +91,15 @@ function readDirPromise(path) {
 }
 
 const gIgnoreDirs = ['node_modules', 'backups', 'builds', 'branding', 'tmp', 'cache', 'clientcache', 'ios', 's3mirror', 'dist'];
+var gRecheckFiles : Boolean = false;
+var gCheckingFiles : Boolean = false;
 
 function findAllFiles(rootPath) {
+    if (gCheckingFiles) {
+        gRecheckFiles = true;
+        return;
+    }
+    gCheckingFiles = true;
     fileCache = new Promise((resolve, reject) => {
         var pack;
 
@@ -135,6 +142,15 @@ function findAllFiles(rootPath) {
                 }
             }));
         });
+    });
+
+    fileCache.then(() => {
+        gCheckingFiles = false;
+
+        if (gRecheckFiles) {
+            findAllFiles(rootPath);
+            gRecheckFiles = false;
+        }
     });
 }
 
