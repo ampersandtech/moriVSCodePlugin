@@ -90,6 +90,8 @@ function readDirPromise(path) {
     })
 }
 
+const gIgnoreDirs = ['node_modules', 'backups', 'builds', 'branding', 'tmp', 'cache', 'clientcache', 'ios', 's3mirror', 'dist'];
+
 function findAllFiles(rootPath) {
     fileCache = new Promise((resolve, reject) => {
         var pack;
@@ -112,7 +114,8 @@ function findAllFiles(rootPath) {
             }
         }
 
-        var filePromise = vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', '{node_modules,.*,backups,builds,branding,tmp,cache,clientcache,ios,s3mirror,dist}/**');
+        var gIgnorePath = `{${gIgnoreDirs.join(',')},.*}/**`;
+        var filePromise = vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', gIgnorePath);
 
         filePromise.then(files => {
             resolve(files.map(file => {
@@ -139,6 +142,22 @@ function findAllFiles(rootPath) {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     findAllFiles(vscode.workspace.rootPath);
+
+    fs.watch(vscode.workspace.rootPath, {recursive: true}, (e, filename) => {
+        if (filename[0] === '.') {
+            return;
+        }
+
+        var file = filename.toString();
+
+        if (gIgnoreDirs.indexOf(file.slice(0, file.indexOf('/')-1)) !== -1) {
+            return;
+        }
+
+        if (e === 'rename') {
+            findAllFiles(vscode.workspace.rootPath);
+        }
+    });
 
     function modifyCurrentDocument(pos: vscode.Position, content: string) {
         if (!vscode.window.activeTextEditor) {
