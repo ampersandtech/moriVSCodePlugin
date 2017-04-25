@@ -9,8 +9,8 @@ import * as fs from 'fs';
 
 let gRegs = {
     js: {
-        module: /var\W+([a-z]\w*)\W+=\W+require\('([\w./\//]+)'\);/,
-        file: /var\W+([A-Z]\w*)\W+=\W+(?:app)?[rR]equire\('([\w./\//]+)'\);/,
+        module: /var\W+([a-z]\w*)\W+=\W+require\('([\w./\//]+)'\).*;/,
+        file: /var\W+([A-Z]\w*)\W+=\W+(?:app)?[rR]equire\('([\w./\//]+)'\).*;/,
         moduleStatement: function(moduleName, filePath) {
             return `var ${moduleName} = require('${filePath}');\n`;
         },
@@ -283,7 +283,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!result.description) {
             label = label[0].toUpperCase() + label.slice(1);
             let moduleName = `${label}`;
-            if (filePath.endsWith('.js')) {
+            if (filePath.endsWith('.js') || filePath.endsWith('.ts')) {
                 filePath = filePath.slice(0, -3);
             }
             if (isTS) {
