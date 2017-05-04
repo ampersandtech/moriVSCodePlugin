@@ -12,7 +12,8 @@
   ],
   "activationEvents": [
     "onCommand:mori.importAndRequire",
-    "onCommand:mori.copyrightHeader"
+    "onCommand:mori.copyrightHeader",
+    "onCommand:mori.convertToTS"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -25,6 +26,11 @@
       "command": "mori.importAndRequire",
       "key": "alt+shift+p",
       "mac": "ctrl+shift+p",
+      "when": "editorTextFocus"
+    },{
+      "command": "mori.convertToTS",
+      "key": "ctrl+shift+l",
+      "mac": "cmd+shift+;",
       "when": "editorTextFocus"
     }],
     "commands": [
