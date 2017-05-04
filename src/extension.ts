@@ -90,7 +90,21 @@ function readDirPromise(path) {
     })
 }
 
-const gIgnoreDirs = ['node_modules', 'backups', 'builds', 'branding', 'tmp', 'cache', 'clientcache', 'ios', 's3mirror', 'dist', 'testdist'];
+const gIgnoreDirs = [
+    'node_modules',
+    'backups',
+    'builds',
+    'branding',
+    'tmp',
+    'cache',
+    'clientcache',
+    'ios',
+    's3mirror',
+    'dist', // ignore old dist folder
+    'testdist', // ignore old testdist folder
+    '**/dist', // ignore new dist folders
+    '.*', // ignore hidden directories (like .vscode/)
+];
 var gRecheckFiles : Boolean = false;
 var gCheckingFiles : Boolean = false;
 
@@ -121,7 +135,7 @@ function findAllFiles(rootPath) {
             }
         }
 
-        var gIgnorePath = `{${gIgnoreDirs.join(',')},.*}/**`;
+        var gIgnorePath = `{${gIgnoreDirs.join(',')}}/**`;
         var filePromise = vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', gIgnorePath);
 
         filePromise.then(files => {
