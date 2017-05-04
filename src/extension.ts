@@ -498,8 +498,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         await vscode.window.activeTextEditor.edit(function(edit) {
             let regs = [
-                {match: /var\s+([^\s]*)\s+=\s+require\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from \'${match[2]}\';`}},
-                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from \'${match[2]}\';`}},
+                {match: /var\s+([^\s]*)\s+=\s+require\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
+                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.jsx)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
+                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.svg)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
+                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
                 {match: /(^|\s*)var\s/, replace: (match) => {return `${match[1]}const `}},
                 {match: /(^|\s*)if (\(.*\)) ([^{}]*);/, replace: (match) => {return `${match[1]}if ${match[2]} {${match[3]}};`}}
             ];
