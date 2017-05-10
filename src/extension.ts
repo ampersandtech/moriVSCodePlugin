@@ -122,7 +122,7 @@ function findAllFiles(rootPath) {
         } catch(e) {
             vscode.window.showWarningMessage(`Unable to load ${rootPath}/package.json!`, e);
         }
-        
+
         let projectMods = [];
 
         if (pack && pack.dependencies) {
@@ -281,7 +281,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const files = fileCache;
-        
+
         let result = await vscode.window.showQuickPick(fileCache, {matchOnDetail: true});
 
         if (!result) {
@@ -305,7 +305,7 @@ export function activate(context: vscode.ExtensionContext) {
             } else {
                 sortName = moduleName;
             }
-            
+
             statement = reg.fileStatement(moduleName, filePath);
         } else {
             // is a module, don't use appRequire
@@ -419,7 +419,7 @@ export function activate(context: vscode.ExtensionContext) {
                         } else {
                             sortBy = m[1]
                         }
-                        
+
                         foundOthers = true;
                         if (m[2] === filePath || m[2] === result.detail) {
                             //Already added
@@ -445,7 +445,7 @@ export function activate(context: vscode.ExtensionContext) {
         const nextLine = pos < doc.lineCount ? doc.lineAt(pos).text.trim() : 'EOF';
 
         if (nextLine !== '') {
-            
+
             var expr = mod ? reg.module : reg.file;
             if (!nextLine.match(expr)) {
                 statement = statement + '\n';
@@ -487,12 +487,12 @@ export function activate(context: vscode.ExtensionContext) {
 
             while(c < 100) {
                 let nextFileURI = vscode.Uri.file(nextFile);
-                
+
                 if (nextFileURI) {
                     let found = true;
 
                     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-                    
+
                     try {
                         currentDoc = await vscode.workspace.openTextDocument(nextFileURI);
                     } catch(e) {
@@ -509,15 +509,20 @@ export function activate(context: vscode.ExtensionContext) {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
-
+        interface regMatch {
+            match: RegExp;
+            replace?: (match) => string;
+            deleteLine?: boolean;
+        }
         await vscode.window.activeTextEditor.edit(function(edit) {
-            let regs = [
+            let regs: regMatch[] = [
                 {match: /var\s+([^\s]*)\s+=\s+require\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
                 {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.jsx)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
                 {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.svg)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
                 {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
                 {match: /(^|\s*)var\s/, replace: (match) => {return `${match[1]}const `}},
-                {match: /(^|\s*)if (\(.*\)) ([^{}]*);/, replace: (match) => {return `${match[1]}if ${match[2]} {${match[3]}};`}}
+                {match: /(^|\s*)if (\(.*\)) ([^{}]*);/, replace: (match) => {return `${match[1]}if ${match[2]} { ${match[3]}; }`}},
+                {match: /'use strict';/, deleteLine: true},
             ];
 
             let doc = vscode.window.activeTextEditor.document;
@@ -530,12 +535,21 @@ export function activate(context: vscode.ExtensionContext) {
                 for (var r=0;r<regs.length;r++) {
                     match = line.text.match(regs[r].match);
                     if (match) {
-                        
-                        var range = new vscode.Range(
-                            new vscode.Position(line.range.start.line, line.range.start.character + match.index),
-                            new vscode.Position(line.range.start.line, line.range.start.character + match.index + match[0].length));
+                        var reg = regs[r];
 
-                        edit.replace(range, regs[r].replace(match));
+
+
+                        if (reg.deleteLine) {
+                            var range = new vscode.Range(line.range.start.line, 0, line.range.start.line+1, 0);
+                            edit.delete(range);
+                        } else if (reg.replace) {
+                            var range = new vscode.Range(
+                                new vscode.Position(line.range.start.line, line.range.start.character + match.index),
+                                new vscode.Position(line.range.start.line, line.range.start.character + match.index + match[0].length));
+
+                            edit.replace(range, reg.replace(match));
+                        }
+
                         break;
                     }
                 }
@@ -568,7 +582,7 @@ export function activate(context: vscode.ExtensionContext) {
                             console.log('unable to find a match');
                         }
                     }
-                    
+
                 }
             }
         });
@@ -588,7 +602,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             for (let i=0;i<doc.lineCount;i++) {
                 let line = doc.lineAt(i);
-                
+
                 match = line.text.match(/(\s*)const\s+(\w+)\s+=\s+React.createClass\({/);
                 if (match) {
                     lineStart = i;
@@ -615,7 +629,7 @@ export function activate(context: vscode.ExtensionContext) {
                             } else {
                                 edit.replace(range, lines.join('\n')+'\n')
                             }
-                            
+
                             componentName = null;
                             lines = null;
                             interfaceLines = null;
@@ -677,7 +691,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if (inInterface) {
                         interfaceLines.push(line.text.slice(tabVal.length+2));
                     }
-                    
+
                     lines.push(line.text);
                 }
             }
