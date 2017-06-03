@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 
-let lastSelections = null;
+let gSelections = {};
 
 const reqRegex = /(?:var|const|let)\W+([A-Za-z]\w*)\W+=\W+(?:app)?[rR]equire\('([\w./\\]+)'\).*/;
 const impRegex = /import\s+(?:\*\s+as\s+(\w+))?(?:{\s*[^}]+})?\s+from\s+'([^']+)';/
@@ -14,6 +14,8 @@ export function HeaderFlip() {
   const doc = vscode.window.activeTextEditor.document;
   let headerStart = -1;
   let headerEnd = -1;
+
+  let lastSelections = gSelections[doc.fileName];
 
   function isImport(text:string) {
     if (text.match(reqRegex) || text.match(impRegex)) {
@@ -51,7 +53,7 @@ export function HeaderFlip() {
       vscode.window.activeTextEditor.selections = lastSelections;
     }
   } else {
-    lastSelections = vscode.window.activeTextEditor.selections;
+    gSelections[doc.fileName] = vscode.window.activeTextEditor.selections;
     vscode.window.activeTextEditor.selections = [
       new vscode.Selection(headerStart, 0, headerStart, 0)
     ];
