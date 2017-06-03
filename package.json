@@ -13,7 +13,8 @@
   "activationEvents": [
     "onCommand:mori.importAndRequire",
     "onCommand:mori.copyrightHeader",
-    "onCommand:mori.convertToTS"
+    "onCommand:mori.convertToTS",
+    "onCommand:mori.headerFlip"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -32,7 +33,13 @@
       "key": "ctrl+shift+l",
       "mac": "cmd+shift+;",
       "when": "editorTextFocus"
+    },{
+      "command": "mori.headerFlip",
+      "key": "ctrl+h",
+      "mac": "cmd+h",
+      "when": "editorTextFocus"
     }],
+
     "commands": [
       {
         "command": "mori.importAndRequire",
@@ -41,6 +48,10 @@
       {
         "command": "mori.copyrightHeader",
         "title": "Mori Copyright Header"
+      },
+      {
+        "command": "mori.headerFlip",
+        "title": "Mori Header Flip"
       }
     ]
   },

@@ -1,3 +1,8 @@
+/**
+* Copyright 2017-present Mori, Inc.
+*
+*/
+
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
@@ -5,6 +10,7 @@ import * as vscode from 'vscode';
 import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
+import { HeaderFlip } from './headerFlip';
 
 
 let gRegs = {
@@ -205,6 +211,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         return fileName ? fileName.slice(fileName.lastIndexOf('.')+1) : '';
     }
+
+    let headerFlip = vscode.commands.registerCommand('mori.headerFlip', async() => {
+        await HeaderFlip();
+    });
 
     let coprightHeader = vscode.commands.registerCommand('mori.copyrightHeader', async () => {
         var year = moment(Date.now()).year();
@@ -701,6 +711,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(convertToTS);
     context.subscriptions.push(importAndRequire);
     context.subscriptions.push(coprightHeader);
+    context.subscriptions.push(headerFlip);
 }
 
 // this method is called when your extension is deactivated
