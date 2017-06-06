@@ -12,9 +12,11 @@
   ],
   "activationEvents": [
     "onCommand:mori.importAndRequire",
+    "onCommand:mori.importAndRequire2",
     "onCommand:mori.copyrightHeader",
     "onCommand:mori.convertToTS",
-    "onCommand:mori.headerFlip"
+    "onCommand:mori.headerFlip",
+    "onCommand:mori.importSort"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -24,9 +26,14 @@
       "mac": "ctrl+shift+c",
       "when": "editorTextFocus"
     },{
-      "command": "mori.importAndRequire",
+      "command": "mori.importAndRequire2",
       "key": "alt+shift+p",
       "mac": "ctrl+shift+p",
+      "when": "editorTextFocus"
+    },{
+      "command": "mori.importSort",
+      "key": "alt+shift+i",
+      "mac": "ctrl+shift+i",
       "when": "editorTextFocus"
     },{
       "command": "mori.convertToTS",
@@ -42,8 +49,12 @@
 
     "commands": [
       {
-        "command": "mori.importAndRequire",
+        "command": "mori.importAndRequire2",
         "title": "Mori Import / Require"
+      },
+      {
+        "command": "mori.importSort",
+        "title": "Mori Import Sort"
       },
       {
         "command": "mori.copyrightHeader",

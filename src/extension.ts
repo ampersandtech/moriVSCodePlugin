@@ -3,7 +3,6 @@
 *
 */
 
-'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
@@ -11,6 +10,8 @@ import * as moment from 'moment';
 import * as path from 'path';
 import * as fs from 'fs';
 import { HeaderFlip } from './headerFlip';
+import { AliasLabel, GetFileCache, FindAllFiles } from './helpers';
+import { SortImportsCommand, ImportModule } from './importModule';
 
 
 let gRegs = {
@@ -35,54 +36,6 @@ let gRegs = {
         },
     },
 };
-
-const coreModules = [
-    "assert",
-    "buffer",
-    "cluster",
-    "child_process",
-    "crypto",
-    "dgram",
-    "dns",
-    "domain",
-    "events",
-    "fs",
-    "http",
-    "https",
-    "net",
-    "npm",
-    "os",
-    "path",
-    "punycode",
-    "readline",
-    "stream",
-    "string_decoder",
-    "tls",
-    "url",
-    "util",
-    "vm",
-    "zlib",
-  ];
-
-let gNodeMods = coreModules.map(mod => {
-    return {
-        label: mod,
-        description: 'core module',
-        detail: '',
-    };
-});
-
-let gAlias = {
-    DB: {reg: /.*([Dd][Bb])(?:[A-Z]|$)+.*/, replace: ["DB"]},
-    Util: {reg: /^((?:[Cc]lient)?(?:[Ss]erver)?)Util$/, replace: [""]},
-    Log: {reg: /^[Ll]og(Common)$/, replace:[""]},
-    React: {reg: /^react(Dom)$/, replace:["DOM"]},
-    CS: {reg: /^([Cc]s)[A-Z].*/, replace:["CS"]},
-};
-
-let gSpecialChar = /([^\W\d_]+)(\d*)([\W_]?)([\w]?)(.*)/; //hmmm... might need a better one... this one goes on forever!
-
-let fileCache : Thenable<{label: string, description: string, detail: string}[]> | {label: string, description: string, detail: string}[];
 
 function readDirPromise(path) {
     return new Promise((resolve, reject) => {
@@ -111,73 +64,11 @@ const gIgnoreDirs = [
     '**/dist', // ignore new dist folders
     '.*', // ignore hidden directories (like .vscode/)
 ];
-var gRecheckFiles : Boolean = false;
-var gCheckingFiles : Boolean = false;
-
-function findAllFiles(rootPath) {
-    if (gCheckingFiles) {
-        gRecheckFiles = true;
-        return;
-    }
-    gCheckingFiles = true;
-    fileCache = new Promise((resolve, reject) => {
-        var pack;
-
-        try {
-            pack = JSON.parse(fs.readFileSync(rootPath + '/package.json').toString());
-        } catch(e) {
-            vscode.window.showWarningMessage(`Unable to load ${rootPath}/package.json!`, e);
-        }
-
-        let projectMods = [];
-
-        if (pack && pack.dependencies) {
-            for (var dep in pack.dependencies) {
-                projectMods.push({
-                    label: dep,
-                    description: pack.dependencies[dep],
-                    detail: 'dependency',
-                });
-            }
-        }
-
-        var gIgnorePath = `{${gIgnoreDirs.join(',')}}/**`;
-        var filePromise = vscode.workspace.findFiles('**/*.{js,jsx,ts,tsx,svg}', gIgnorePath);
-
-        filePromise.then(files => {
-            resolve(files.map(file => {
-                const lastSlash = file.path.lastIndexOf('/');
-                return {
-                    label: file.path.substr(lastSlash + 1),
-                    description: '',
-                    detail: file.path.slice(rootPath.length + 1),
-                };
-            }).concat(gNodeMods).concat(projectMods).sort(function(a, b) {
-                if (a.label === b.label) {
-                    return 0;
-                } else if (a.label > b.label) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }));
-        });
-    });
-
-    fileCache.then(() => {
-        gCheckingFiles = false;
-
-        if (gRecheckFiles) {
-            findAllFiles(rootPath);
-            gRecheckFiles = false;
-        }
-    });
-}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    findAllFiles(vscode.workspace.rootPath);
+    FindAllFiles(vscode.workspace.rootPath, gIgnoreDirs);
 
     fs.watch(vscode.workspace.rootPath, {recursive: true}, (e, filename) => {
         if (filename[0] === '.') {
@@ -191,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (e === 'rename') {
-            findAllFiles(vscode.workspace.rootPath);
+            FindAllFiles(vscode.workspace.rootPath, gIgnoreDirs);
         }
     });
 
@@ -228,48 +119,15 @@ export function activate(context: vscode.ExtensionContext) {
         return modifyCurrentDocument(new vscode.Position(0,0), copy);
     });
 
-    function aliasLabel(label : string) {
-        let rtn = label;
-
-        if (rtn.endsWith('.svg')) {
-            rtn = 'SVG' + rtn[0].toUpperCase() + rtn.slice(1);
-        }
-
-        var dotIndex = rtn.indexOf('.');
-
-        if (dotIndex > -1) {
-            rtn = rtn.slice(0, dotIndex);
-        }
-
-        for (var id in gAlias) {
-            var m = gAlias[id].reg.exec(rtn);
-            if (m) {
-                for (var i=0;i<gAlias[id].replace.length;i++) {
-                    var index = rtn.indexOf(m[i+1]);
-                    if (index > -1) {
-                        rtn = `${rtn.slice(0, index)}${gAlias[id].replace[i]}${rtn.slice(index+m[i+1].length)}`;
-                    }
-                }
-                break;
-            }
-        }
-
-        let s = gSpecialChar.exec(rtn);
-        let c = 0;
-        while(s && c<100) {
-            c++;
-            rtn = s[1] + s[2] + s[4].toUpperCase() + s[5];
-            s = gSpecialChar.exec(rtn);
-        }
-
-        return rtn;
-    }
+    let importSort = vscode.commands.registerCommand('mori.importSort', SortImportsCommand);
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
+    let importAndRequire2 = vscode.commands.registerCommand('mori.importAndRequire2', async () => {
+        return ImportModule();
+    })
     let importAndRequire = vscode.commands.registerCommand('mori.importAndRequire', async () => {
-        var time = Date.now();
         // The code you place here will be executed every time your command is executed
         var fileName = vscode.window.activeTextEditor.document.fileName;
         if (fileName.lastIndexOf('.') === -1) {
@@ -290,9 +148,9 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const files = fileCache;
+        const files = GetFileCache();
 
-        let result = await vscode.window.showQuickPick(fileCache, {matchOnDetail: true});
+        let result = await vscode.window.showQuickPick(files, {matchOnDetail: true});
 
         if (!result) {
             return;
@@ -300,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         var mod = false;
         var statement;
-        var label = aliasLabel(result.label);
+        var label = AliasLabel(result.label);
         var sortName;
         let filePath = result.detail;
 
