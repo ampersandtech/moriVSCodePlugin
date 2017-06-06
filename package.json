@@ -12,7 +12,6 @@
   ],
   "activationEvents": [
     "onCommand:mori.importAndRequire",
-    "onCommand:mori.importAndRequire2",
     "onCommand:mori.copyrightHeader",
     "onCommand:mori.convertToTS",
     "onCommand:mori.headerFlip",
@@ -26,7 +25,7 @@
       "mac": "ctrl+shift+c",
       "when": "editorTextFocus"
     },{
-      "command": "mori.importAndRequire2",
+      "command": "mori.importAndRequire",
       "key": "alt+shift+p",
       "mac": "ctrl+shift+p",
       "when": "editorTextFocus"

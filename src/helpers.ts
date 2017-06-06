@@ -182,9 +182,9 @@ export function SortImports(imports: string[]) {
             const requireMatch = s.match(/^(?:var|let|const)\s+([^\W]*)/);
             if (requireMatch) {
                 if (requireMatch[1].match(/^[A-Z]/)) {
-                    return '5:' + requireMatch[1].toLowerCase();
+                    return '3:' + requireMatch[1].toLowerCase();
                 } else {
-                    return '4:' + requireMatch[1].toLowerCase();
+                    return '2:' + requireMatch[1].toLowerCase();
                 }
             } else {
                 const importMatch = s.match(/import\s+(?:\*\s+as\s+([^\s]+)\s+)?(?:{([^}]+)}\s+)?from\s+'([^']+)';.*$/);

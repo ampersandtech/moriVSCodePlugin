@@ -68,11 +68,11 @@ export async function ImportModule() {
   }
 
   if (!result.detail || result.detail === 'dependency') {
-    let label = result.label;
+    let label = AliasLabel(result.label);
     if (label === 'react') {
       label = 'React';
     }
-    if (label === 'react-dom') {
+    if (label === 'reactDom') {
       label = 'ReactDOM';
     }
     let importLine;
@@ -123,7 +123,7 @@ export async function ImportModule() {
 
     for (let i=0;i<text.length;i++) {
       const line = text[i];
-      const match = line.match(/^\s*(?:module\.)?exports\.?(\w+)?\s+=\s+.*/);
+      const match = line.match(/^\s*(?:module\.)?exports\.?(\w+)\s+=\s+.*/);
       if (match) {
         fileExports.push({
           label: match[1],
@@ -135,10 +135,11 @@ export async function ImportModule() {
   } else {
     let label = AliasLabel(importFileName);
     if (ext.match(/tsx?/)) {
-      InsertImportLine(`const ${label} = require('${importFileName}');`);
+      InsertImportLine(`const ${label} = appRequire('${importFileName}');`);
     } else {
-      InsertImportLine(`var ${label} = require('${importFileName}');`);
+      InsertImportLine(`var ${label} = appRequire('${importFileName}');`);
     }
+    return;
   }
 
   const exportResult = await vscode.window.showQuickPick(fileExports, {matchOnDescription: true, matchOnDetail: true});
