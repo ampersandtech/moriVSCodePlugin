@@ -188,7 +188,7 @@ export function SortImports(imports: string[]) {
                 }
             } else {
                 const importMatch = s.match(/import\s+(?:\*\s+as\s+([^\s]+)\s+)?(?:{([^}]+)}\s+)?from\s+'([^']+)';.*$/);
-                if (!importMatch[1] || !importMatch[2]) {
+                if (!importMatch[1] && !importMatch[2]) {
                     return '0:'; //DO NOT ADD STRING, this takes care of import from 'file', where order in the file matters.
                 }
                 if (!importMatch) {
