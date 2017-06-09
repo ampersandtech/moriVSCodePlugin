@@ -168,7 +168,7 @@ export async function ImportModule() {
     }
 
     if (ext.match(/tsx?/)) {
-      importLine = `import * as ${label} from '${importFileName}';`;
+      importLine = `import * as ${label[0].toUpperCase() + label.slice(1)} from '${importFileName}';`;
     } else {
       importLine = `var ${label[0].toUpperCase() + label.slice(1)} = appRequire('${importFileName}');`;
     }
