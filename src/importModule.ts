@@ -30,13 +30,14 @@ export async function SortImportsCommand() {
 export async function InsertImportLine(importLine) {
   const curText = vscode.window.activeTextEditor.document.getText().split('\n');
   const importBlock = GetImportLines(curText);
+  const addLine = curText[importBlock.range.end.line+1] ? true : false;
 
   importBlock.imports.push(importLine);
 
   SortImports(importBlock.imports);
 
   vscode.window.activeTextEditor.edit(function(edit) {
-      edit.replace(importBlock.range, importBlock.imports.join('\n') + '\n');
+      edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
   });
 }
 

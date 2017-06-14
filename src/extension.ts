@@ -112,7 +112,7 @@ export function activate(context: vscode.ExtensionContext) {
         var copy = `/**\n* Copyright ${year}-present Mori, Inc.\n*\n*/\n`
         var ext = getCurrentExt();
         if (ext === 'js' || ext ==='jsx') {
-            copy += `use strict';\n\n`;
+            copy += `'use strict';\n\n`;
         } else {
             copy += `\n`;
         }

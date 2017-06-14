@@ -129,11 +129,15 @@ export function GetImportLines(curText) {
     let headerStart = -1;
     let headerEnd = -1;
     let blanks = 0;
+    let firstBlank = -1;
 
     for (let i = 0; i < curText.length; i++) {
         const line = curText[i];
 
         if (line.trim() === '') {
+            if (firstBlank === -1) {
+                firstBlank = i;
+            }
             if (headerStart !== -1) {
                 imports.push('');
                 blanks++;
@@ -159,7 +163,18 @@ export function GetImportLines(curText) {
         blanks = 0;
     }
 
-    return { imports: imports, range: new vscode.Range(headerStart, 0, headerEnd + 1, 0) };
+    if (headerStart === -1) {
+        headerStart = firstBlank === -1 ? curText.length-1 : firstBlank;
+        headerEnd = headerStart;
+        return { imports: [], range: new vscode.Range(headerStart, 0, headerEnd, 0) };
+    }
+
+    if (headerEnd === -1) {
+        headerEnd = curText.length-blanks-1;
+        return { imports: imports, range: new vscode.Range(headerStart, 0, headerEnd, curText[headerEnd].length) };
+    }
+
+    return { imports: imports, range: new vscode.Range(headerStart, 0, headerEnd, curText[headerEnd].length) };
 }
 
 export function SortImports(imports: string[]) {
