@@ -88,6 +88,10 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.workspace.onWillSaveTextDocument((e) => {
+        if (!e.document.fileName.match(/\.[tj]sx?$/)) {
+            return;
+        }
+
         let config = vscode.workspace.getConfiguration('morivscode');
 
         if (!config || !config.get('sortImportsOnSave')) {
