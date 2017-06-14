@@ -1,8 +1,8 @@
 {
   "name": "morivscodeplugin",
   "displayName": "moriVSCodePlugin",
-  "description": "usefull plugin for programmers at mori",
-  "version": "0.0.12",
+  "description": "useful plugin for programmers at mori",
+  "version": "0.0.13",
   "publisher": "moridevelopment",
   "engines": {
     "vscode": "^1.10.0"
@@ -48,7 +48,7 @@
 
     "commands": [
       {
-        "command": "mori.importAndRequire2",
+        "command": "mori.importAndRequire",
         "title": "Mori Import / Require"
       },
       {
