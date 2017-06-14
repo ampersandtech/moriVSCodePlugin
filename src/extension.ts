@@ -5,12 +5,13 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as moment from 'moment';
 import * as path from 'path';
-import * as fs from 'fs';
+import * as vscode from 'vscode';
+
 import { HeaderFlip } from './headerFlip';
-import { AliasLabel, GetFileCache, FindAllFiles } from './helpers';
+import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
 import { SortImportsCommand, ImportModule } from './importModule';
 
 
@@ -83,6 +84,42 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (e === 'rename') {
             FindAllFiles(vscode.workspace.rootPath, gIgnoreDirs);
+        }
+    });
+
+    vscode.workspace.onWillSaveTextDocument((e) => {
+        let config = vscode.workspace.getConfiguration('morivscode');
+
+        if (!config || !config.get('sortImportsOnSave')) {
+            return;
+        }
+
+        var curText = e.document.getText().split('\n');
+        var importBlock = GetImportLines(curText);
+        var oldBlock = importBlock.imports.slice();
+        var sortIt = false;
+
+        SortImports(importBlock.imports);
+
+        if (oldBlock.length === importBlock.imports.length) {
+            for (let i=0;i<oldBlock.length;i++) {
+                if (oldBlock[i] !== importBlock.imports[i]) {
+                    sortIt = true;
+                    break;
+                }
+            }
+        } else {
+            sortIt = true;
+        }
+
+        if (sortIt) {
+            const addLine = curText[importBlock.range.end.line+1] ? true : false;
+
+            vscode.window.activeTextEditor.edit(function(edit) {
+                edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
+            });
+
+            const disp = vscode.window.setStatusBarMessage('moriVSCode: I sorted your imports for you. You\'re welcome!', 3000);
         }
     });
 

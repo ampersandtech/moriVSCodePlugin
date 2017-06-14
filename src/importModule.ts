@@ -19,11 +19,12 @@ let gAlias = {
 export async function SortImportsCommand() {
   const curText = vscode.window.activeTextEditor.document.getText().split('\n');
   const importBlock = GetImportLines(curText);
+  const addLine = curText[importBlock.range.end.line+1] ? true : false;
 
   SortImports(importBlock.imports);
 
   vscode.window.activeTextEditor.edit(function(edit) {
-    edit.replace(importBlock.range, importBlock.imports.join('\n') + '\n');
+    edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
   });
 }
 
