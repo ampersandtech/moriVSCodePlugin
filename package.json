@@ -2,7 +2,7 @@
   "name": "morivscodeplugin",
   "displayName": "moriVSCodePlugin",
   "description": "useful plugin for programmers at mori",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "publisher": "moridevelopment",
   "engines": {
     "vscode": "^1.10.0"

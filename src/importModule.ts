@@ -38,7 +38,7 @@ export async function InsertImportLine(importLine) {
   SortImports(importBlock.imports);
 
   vscode.window.activeTextEditor.edit(function(edit) {
-      edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
+    edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
   });
 }
 

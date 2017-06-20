@@ -3,8 +3,8 @@
 *
 */
 
-import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 let fileCache: Thenable<{ label: string, description: string, detail: string }[]> | { label: string, description: string, detail: string }[];
 
@@ -210,7 +210,7 @@ export function SortImports(imports: string[]) {
                     return '0:' + s;
                 }
 
-                return '1:' + importMatch[3].toLowerCase();
+                return '1:' + importMatch[3].toLowerCase() + + (importMatch[1] ? '/1' : '/2');
             }
         }
 
