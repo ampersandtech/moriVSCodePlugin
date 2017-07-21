@@ -1,12 +1,12 @@
 /**
-* Copyright 2017-present Mori, Inc.
+* Copyright 2017-present Ampersand, Inc.
 *
 */
 
-import * as vscode from 'vscode';
-import * as path from 'path';
-
 import { GetImportLines, SortImports, AliasLabel, GetFileCache } from './helpers';
+
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 let gAlias = {
     DB: {reg: /.*([Dd][Bb])(?:[A-Z]|$)+.*/, replace: ["DB"]},

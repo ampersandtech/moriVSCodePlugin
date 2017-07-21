@@ -1,5 +1,5 @@
 /**
-* Copyright 2017-present Mori, Inc.
+* Copyright 2017-present Ampersand, Inc.
 *
 */
 

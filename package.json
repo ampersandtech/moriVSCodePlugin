@@ -1,8 +1,8 @@
 {
   "name": "morivscodeplugin",
-  "displayName": "moriVSCodePlugin",
-  "description": "useful plugin for programmers at mori",
-  "version": "0.0.17",
+  "displayName": "Ampersand VS Code Plugin",
+  "description": "useful plugin for programmers at Ampersand",
+  "version": "0.0.18",
   "publisher": "moridevelopment",
   "engines": {
     "vscode": "^1.10.0"
@@ -11,11 +11,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:mori.importAndRequire",
-    "onCommand:mori.copyrightHeader",
-    "onCommand:mori.convertToTS",
-    "onCommand:mori.headerFlip",
-    "onCommand:mori.importSort",
+    "onCommand:ampersand.importAndRequire",
+    "onCommand:ampersand.copyrightHeader",
+    "onCommand:ampersand.convertToTS",
+    "onCommand:ampersand.headerFlip",
+    "onCommand:ampersand.importSort",
     "onLanguage:javascript",
     "onLanguage:typescript"
   ],
@@ -23,37 +23,37 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "Mori VS Code Plugin configuration",
+      "title": "ampersand VS Code Plugin configuration",
       "properties": {
-        "morivscode.sortImportsOnSave": {
+        "ampersandvscode.sortImportsOnSave": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Sort the import headers on the save of any js, jsx, ts or tsx file"
         }
       }
     },
     "keybindings": [{
-      "command": "mori.copyrightHeader",
+      "command": "ampersand.copyrightHeader",
       "key": "ctrl+shift+c",
       "mac": "ctrl+shift+c",
       "when": "editorTextFocus"
     },{
-      "command": "mori.importAndRequire",
+      "command": "ampersand.importAndRequire",
       "key": "alt+shift+p",
       "mac": "ctrl+shift+p",
       "when": "editorTextFocus"
     },{
-      "command": "mori.importSort",
+      "command": "ampersand.importSort",
       "key": "alt+shift+i",
       "mac": "ctrl+shift+i",
       "when": "editorTextFocus"
     },{
-      "command": "mori.convertToTS",
+      "command": "ampersand.convertToTS",
       "key": "ctrl+shift+l",
       "mac": "cmd+shift+;",
       "when": "editorTextFocus"
     },{
-      "command": "mori.headerFlip",
+      "command": "ampersand.headerFlip",
       "key": "ctrl+h",
       "mac": "cmd+h",
       "when": "editorTextFocus"
@@ -61,20 +61,20 @@
 
     "commands": [
       {
-        "command": "mori.importAndRequire",
-        "title": "Mori Import / Require"
+        "command": "ampersand.importAndRequire",
+        "title": "Ampersand Import / Require"
       },
       {
-        "command": "mori.importSort",
-        "title": "Mori Import Sort"
+        "command": "ampersand.importSort",
+        "title": "Ampersand Import Sort"
       },
       {
-        "command": "mori.copyrightHeader",
-        "title": "Mori Copyright Header"
+        "command": "ampersand.copyrightHeader",
+        "title": "Ampersand Copyright Header"
       },
       {
-        "command": "mori.headerFlip",
-        "title": "Mori Header Flip"
+        "command": "ampersand.headerFlip",
+        "title": "Ampersand Header Flip"
       }
     ]
   },

@@ -1,18 +1,18 @@
 /**
-* Copyright 2017-present Mori, Inc.
+* Copyright 2017-present Ampersand, Inc.
 *
 */
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { HeaderFlip } from './headerFlip';
+import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
+import { SortImportsCommand, ImportModule } from './importModule';
+
 import * as fs from 'fs';
 import * as moment from 'moment';
 import * as path from 'path';
 import * as vscode from 'vscode';
-
-import { HeaderFlip } from './headerFlip';
-import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
-import { SortImportsCommand, ImportModule } from './importModule';
 
 
 let gRegs = {
@@ -92,7 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        let config = vscode.workspace.getConfiguration('morivscode');
+        let config = vscode.workspace.getConfiguration('ampersandvscode');
 
         if (!config || !config.get('sortImportsOnSave')) {
             return;
@@ -123,7 +123,7 @@ export function activate(context: vscode.ExtensionContext) {
                 edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
             });
 
-            const disp = vscode.window.setStatusBarMessage('moriVSCode: I sorted your imports for you. You\'re welcome!', 3000);
+            const disp = vscode.window.setStatusBarMessage('ampersandVSCode: I sorted your imports for you. You\'re welcome!', 3000);
         }
     });
 
@@ -144,13 +144,13 @@ export function activate(context: vscode.ExtensionContext) {
         return fileName ? fileName.slice(fileName.lastIndexOf('.')+1) : '';
     }
 
-    let headerFlip = vscode.commands.registerCommand('mori.headerFlip', async() => {
+    let headerFlip = vscode.commands.registerCommand('ampersand.headerFlip', async() => {
         await HeaderFlip();
     });
 
-    let coprightHeader = vscode.commands.registerCommand('mori.copyrightHeader', async () => {
+    let coprightHeader = vscode.commands.registerCommand('ampersand.copyrightHeader', async () => {
         var year = moment(Date.now()).year();
-        var copy = `/**\n* Copyright ${year}-present Mori, Inc.\n*\n*/\n`
+        var copy = `/**\n* Copyright ${year}-present Ampersand Technologies, Inc.\n*\n*/\n`
         var ext = getCurrentExt();
         if (ext === 'js' || ext ==='jsx') {
             copy += `'use strict';\n\n`;
@@ -160,16 +160,16 @@ export function activate(context: vscode.ExtensionContext) {
         return modifyCurrentDocument(new vscode.Position(0,0), copy);
     });
 
-    let importSort = vscode.commands.registerCommand('mori.importSort', SortImportsCommand);
+    let importSort = vscode.commands.registerCommand('ampersand.importSort', SortImportsCommand);
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let importAndRequire = vscode.commands.registerCommand('mori.importAndRequire', async () => {
+    let importAndRequire = vscode.commands.registerCommand('ampersand.importAndRequire', async () => {
         return ImportModule();
     });
 
-    let convertToTS = vscode.commands.registerCommand('mori.convertToTS', async () => {
+    let convertToTS = vscode.commands.registerCommand('ampersand.convertToTS', async () => {
         let curFile = vscode.window.activeTextEditor.document.fileName;
 
         if (!curFile.match(/\.tsx?$/)) {
