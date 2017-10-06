@@ -16,6 +16,7 @@
     "onCommand:ampersand.convertToTS",
     "onCommand:ampersand.headerFlip",
     "onCommand:ampersand.importSort",
+    "onCommand:ampersand.breakOnComma",
     "onLanguage:javascript",
     "onLanguage:typescript"
   ],
@@ -75,6 +76,10 @@
       {
         "command": "ampersand.headerFlip",
         "title": "Ampersand Header Flip"
+      },
+      {
+        "command": "ampersand.breakOnComma",
+        "title": "Ampersand Break on Comma"
       }
     ]
   },

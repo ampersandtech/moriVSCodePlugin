@@ -408,6 +408,24 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(importAndRequire);
     context.subscriptions.push(coprightHeader);
     context.subscriptions.push(headerFlip);
+
+    let breakOnComma = vscode.commands.registerCommand('ampersand.breakOnComma', async () => {
+        for (const selection of vscode.window.activeTextEditor.selections) {
+            vscode.window.activeTextEditor.edit((edit) => {
+                const text = vscode.window.activeTextEditor.document.getText(selection);
+                let newText = text.replace(/,/g, ',\n');
+                if (newText.startsWith('[')) {
+                    newText = '[\n' + newText.substr(1);
+                }
+                if (newText.endsWith(']')) {
+                    newText = newText.substr(0, newText.length - 1) + ',\n]';
+                }
+                edit.replace(selection, newText);
+            });
+        }
+        await vscode.commands.executeCommand("editor.action.formatSelection");
+    });
+    context.subscriptions.push(breakOnComma);
 }
 
 // this method is called when your extension is deactivated
