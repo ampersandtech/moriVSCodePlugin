@@ -409,17 +409,30 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(coprightHeader);
     context.subscriptions.push(headerFlip);
 
+    const bracketPairs = {
+        '{': '}',
+        '[': ']',
+        '(': ')',
+    };
+
     let breakOnComma = vscode.commands.registerCommand('ampersand.breakOnComma', async () => {
         for (const selection of vscode.window.activeTextEditor.selections) {
             vscode.window.activeTextEditor.edit((edit) => {
                 const text = vscode.window.activeTextEditor.document.getText(selection);
                 let newText = text.replace(/,/g, ',\n');
-                if (newText.startsWith('[')) {
-                    newText = '[\n' + newText.substr(1);
+
+                const first = newText.charAt(0);
+                let closeBracket = null;
+
+                if (first in bracketPairs) {
+                    closeBracket = bracketPairs[first];
+                    newText = first + '\n' + newText.substr(1);
+
+                    if (newText.endsWith(closeBracket)) {
+                        newText = newText.substr(0, newText.length - 1) + ',\n' + closeBracket;
+                    }
                 }
-                if (newText.endsWith(']')) {
-                    newText = newText.substr(0, newText.length - 1) + ',\n]';
-                }
+
                 edit.replace(selection, newText);
             });
         }
