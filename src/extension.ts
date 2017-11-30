@@ -150,7 +150,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let coprightHeader = vscode.commands.registerCommand('ampersand.copyrightHeader', async () => {
         var year = moment(Date.now()).year();
-        var copy = `/**\n* Copyright ${year}-present Ampersand Technologies, Inc.\n*\n*/\n`
+        var copy = `/**\n * Copyright ${year}-present Ampersand Technologies, Inc.\n */\n`
         var ext = getCurrentExt();
         if (ext === 'js' || ext ==='jsx') {
             copy += `'use strict';\n\n`;
@@ -309,7 +309,7 @@ export function activate(context: vscode.ExtensionContext) {
             for (let i=0;i<doc.lineCount;i++) {
                 let line = doc.lineAt(i);
 
-                match = line.text.match(/(\s*)const\s+(\w+)\s+=\s+React.createClass\({/);
+                match = line.text.match(/(\s*)const\s+(\w+)\s+=\s+createClass\({/);
                 if (match) {
                     lineStart = i;
                     componentName = match[2];
