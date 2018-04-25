@@ -110,7 +110,7 @@ export async function ImportModule() {
 
     for (let i=0;i<text.length;i++) {
       const line = text[i];
-      const match = line.match(/^\s*export(?: default)?(?: abstract)?\W+([^\W]*)\W+([\w]*)(.*)/);
+      const match = line.match(/^\s*export(?: async)?(?: default)?(?: abstract)?\W+([^\W]*)\W+([\w]*)(.*)/);
       if (match) {
         fileExports.push({
           label: match[2],

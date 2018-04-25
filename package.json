@@ -2,7 +2,7 @@
   "name": "morivscodeplugin",
   "displayName": "Ampersand VS Code Plugin",
   "description": "useful plugin for programmers at Ampersand",
-  "version": "0.0.19",
+  "version": "0.0.21",
   "publisher": "moridevelopment",
   "engines": {
     "vscode": "^1.10.0"
@@ -33,33 +33,38 @@
         }
       }
     },
-    "keybindings": [{
-      "command": "ampersand.copyrightHeader",
-      "key": "ctrl+shift+c",
-      "mac": "ctrl+shift+c",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.importAndRequire",
-      "key": "alt+shift+p",
-      "mac": "ctrl+shift+p",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.importSort",
-      "key": "alt+shift+i",
-      "mac": "ctrl+shift+i",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.convertToTS",
-      "key": "ctrl+shift+l",
-      "mac": "cmd+shift+;",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.headerFlip",
-      "key": "ctrl+h",
-      "mac": "cmd+h",
-      "when": "editorTextFocus"
-    }],
-
+    "keybindings": [
+      {
+        "command": "ampersand.copyrightHeader",
+        "key": "ctrl+shift+c",
+        "mac": "ctrl+shift+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.importAndRequire",
+        "key": "alt+shift+p",
+        "mac": "ctrl+shift+p",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.importSort",
+        "key": "alt+shift+i",
+        "mac": "ctrl+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.convertToTS",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+;",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.headerFlip",
+        "key": "ctrl+h",
+        "mac": "cmd+h",
+        "when": "editorTextFocus"
+      }
+    ],
     "commands": [
       {
         "command": "ampersand.importAndRequire",
@@ -99,6 +104,7 @@
     "@types/mocha": "^2.2.32"
   },
   "dependencies": {
-    "moment": "^2.18.1"
+    "moment": "^2.18.1",
+    "tslint": "^5.9.1"
   }
 }

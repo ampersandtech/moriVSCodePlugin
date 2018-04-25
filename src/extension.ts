@@ -5,6 +5,7 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import * as ConvertToTS from './convertToTS';
 import { HeaderFlip } from './headerFlip';
 import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
 import { SortImportsCommand, ImportModule } from './importModule';
@@ -150,7 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let coprightHeader = vscode.commands.registerCommand('ampersand.copyrightHeader', async () => {
         var year = moment(Date.now()).year();
-        var copy = `/**\n* Copyright ${year}-present Ampersand Technologies, Inc.\n*\n*/\n`
+        var copy = `/**\n* Copyright ${year}-present Ampersand Technologies, Inc.\n*/\n`
         var ext = getCurrentExt();
         if (ext === 'js' || ext ==='jsx') {
             copy += `'use strict';\n\n`;
@@ -215,193 +216,7 @@ export function activate(context: vscode.ExtensionContext) {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
-        interface regMatch {
-            match: RegExp;
-            replace?: (match) => string;
-            deleteLine?: boolean;
-        }
-        await vscode.window.activeTextEditor.edit(function(edit) {
-            let regs: regMatch[] = [
-                {match: /var\s+([^\s]*)\s+=\s+require\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
-                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.jsx)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
-                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*.svg)'\);/, replace: (match) => {return `const ${match[1]} = require('${match[2]}');`}},
-                {match: /var\s+([^\s]*)\s+=\s+appRequire\('([^']*)'\);/, replace: (match) => {return `import * as ${match[1]} from '${match[2]}';`}},
-                {match: /(^|\s*)var\s/, replace: (match) => {return `${match[1]}const `}},
-                {match: /(^|\s*)if (\(.*\)) ([^{}]*);/, replace: (match) => {return `${match[1]}if ${match[2]} { ${match[3]}; }`}},
-                {match: /'use strict';/, deleteLine: true},
-            ];
-
-            let doc = vscode.window.activeTextEditor.document;
-            let funcLines = {};
-
-            for (var i=0;i<doc.lineCount;i++) {
-                let line = doc.lineAt(i);
-                let match;
-
-                for (var r=0;r<regs.length;r++) {
-                    match = line.text.match(regs[r].match);
-                    if (match) {
-                        var reg = regs[r];
-
-
-
-                        if (reg.deleteLine) {
-                            var range = new vscode.Range(line.range.start.line, 0, line.range.start.line+1, 0);
-                            edit.delete(range);
-                        } else if (reg.replace) {
-                            var range = new vscode.Range(
-                                new vscode.Position(line.range.start.line, line.range.start.character + match.index),
-                                new vscode.Position(line.range.start.line, line.range.start.character + match.index + match[0].length));
-
-                            edit.replace(range, reg.replace(match));
-                        }
-
-                        break;
-                    }
-                }
-
-                //store all named functions
-                match = line.text.match(/(?:^)function ([^\s()]+)\([^)]*\) {/);
-                if (match) {
-                    funcLines[match[1]] = {line: i, character: match.index};
-                }
-
-                match = line.text.match(/(?:module\.)?exports\.?([^\s]+)? = ([^\s]+);/);
-                if (match) {
-                    let funcLine = funcLines[match[2]];
-                    if (funcLine) {
-                        if (match[1] === match[2]) {
-                            if (funcLine) {
-                                edit.replace(new vscode.Position(funcLine.line, funcLine.character), 'export ');
-                            }
-                            edit.delete(line.range);
-                        } else if (!match[1]) {
-                            if (funcLine.deleteConst) {
-                                edit.delete(new vscode.Selection(
-                                    new vscode.Position(funcLine.line, funcLine.character),
-                                    new vscode.Position(funcLine.line, funcLine.character + 5)
-                                ));
-                            }
-                            edit.replace(new vscode.Position(funcLine.line, funcLine.character), 'export default ');
-                            edit.delete(line.range);
-                        } else {
-                            console.log('unable to find a match');
-                        }
-                    }
-
-                }
-            }
-        });
-
-        await vscode.window.activeTextEditor.edit((edit) => {
-            let doc = vscode.window.activeTextEditor.document;
-            let match;
-
-            let componentName :string;
-            let tabVal :string;
-            let lines :string[];
-            let lineStart = 0;
-            let closingTab :string;
-            let hasProps = false;
-            let inInterface = false;
-            let interfaceLines = [];
-
-            for (let i=0;i<doc.lineCount;i++) {
-                let line = doc.lineAt(i);
-
-                match = line.text.match(/(\s*)const\s+(\w+)\s+=\s+React.createClass\({/);
-                if (match) {
-                    lineStart = i;
-                    componentName = match[2];
-                    tabVal = match[1];
-                    lines = [];
-                    interfaceLines = [];
-
-                    lines.push(`${tabVal}class ${match[2]} extends React.Component<{}, {}> {`);
-                    continue;
-                }
-
-                if (componentName) {
-                    match = line.text.match(/^(\s*)}\);/);
-                    if (match) {
-                        if (match[1] === tabVal) {
-                            lines.push(`${tabVal}};`);
-                            let range = new vscode.Range(
-                                new vscode.Position(lineStart, 0),
-                                new vscode.Position(i+1,0),
-                            );
-                            if (hasProps) {
-                                edit.replace(range, `${interfaceLines.join('\n')}\n\n${lines.join('\n')}\n`)
-                            } else {
-                                edit.replace(range, lines.join('\n')+'\n')
-                            }
-
-                            componentName = null;
-                            lines = null;
-                            interfaceLines = null;
-                            lineStart = 0;
-                            continue;
-                        }
-                    }
-
-                    match = line.text.match(/(\s*)propTypes:\s*{/);
-                    if (match && match[1].length === tabVal.length + 2) {
-                        hasProps = true;
-                        inInterface = true;
-                        interfaceLines.push(`${tabVal}interface ${componentName}Props {`);
-                        lines[0] = `${tabVal}class ${componentName} extends React.Component<${componentName}Props, {}> {`;
-                        //Don't continue here, allow for the prop strucutre to remain
-                    }
-
-
-                    match = line.text.match(/(\s*)(\w+):\s+function(\([^)]*\))\s+{/);
-                    if (match && match[1].length === tabVal.length + 2) {
-                        lines.push(`${match[1]}${match[2]}${match[3]} {`);
-                        continue;
-                    }
-
-                    match = line.text.match(/(\s*)},/);
-                    if (match && match[1].length === tabVal.length + 2) {
-                        lines.push(`${match[1]}}`);
-                        if (inInterface) {
-                            interfaceLines.push('};');
-                            inInterface = false;
-                        }
-                        continue;
-                    }
-
-                    if (closingTab) {
-                        match = line.text.match(/([^,])+,\s*$/);
-                        if (match && match[1] === closingTab) {
-                            lines.push(`${match[2]};`);
-                            closingTab = null;
-                            continue;
-                        }
-                    }
-
-                    match = line.text.match(/(\s+)([\w]+):\s*([^,]*)?(,)?$/);
-                    if (match && match[1].length === tabVal.length + 2) {
-                        let staticLine = `${match[1]}static ${match[2]}`;
-                        if (match[3]) {
-                            staticLine += ` = ${match[3]}`;
-                        }
-                        if (match[4]) {
-                            staticLine += ';';
-                        } else {
-                            closingTab = match[1];
-                        }
-                        lines.push(staticLine);
-                        continue;
-                    }
-
-                    if (inInterface) {
-                        interfaceLines.push(line.text.slice(tabVal.length+2));
-                    }
-
-                    lines.push(line.text);
-                }
-            }
-        });
+        await ConvertToTS.makeEdits();
     });
 
     context.subscriptions.push(convertToTS);
