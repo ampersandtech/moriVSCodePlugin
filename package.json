@@ -17,6 +17,7 @@
     "onCommand:ampersand.headerFlip",
     "onCommand:ampersand.importSort",
     "onCommand:ampersand.breakOnComma",
+    "onCommand:ampersand.createTemplate",
     "onLanguage:javascript",
     "onLanguage:typescript"
   ],
@@ -63,6 +64,12 @@
         "key": "ctrl+h",
         "mac": "cmd+h",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.createTemplate",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "editorTextFocus"
       }
     ],
     "commands": [
@@ -81,6 +88,10 @@
       {
         "command": "ampersand.headerFlip",
         "title": "Ampersand Header Flip"
+      },
+      {
+        "command": "ampersand.createTemplate",
+        "title": "Ampersand Create Template"
       },
       {
         "command": "ampersand.breakOnComma",
