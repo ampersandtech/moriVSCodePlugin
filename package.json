@@ -17,6 +17,7 @@
     "onCommand:ampersand.headerFlip",
     "onCommand:ampersand.importSort",
     "onCommand:ampersand.breakOnComma",
+    "onCommand:ampersand.createTemplate",
     "onLanguage:javascript",
     "onLanguage:typescript"
   ],
@@ -33,33 +34,44 @@
         }
       }
     },
-    "keybindings": [{
-      "command": "ampersand.copyrightHeader",
-      "key": "ctrl+shift+c",
-      "mac": "ctrl+shift+c",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.importAndRequire",
-      "key": "alt+shift+p",
-      "mac": "ctrl+shift+p",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.importSort",
-      "key": "alt+shift+i",
-      "mac": "ctrl+shift+i",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.convertToTS",
-      "key": "ctrl+shift+l",
-      "mac": "cmd+shift+;",
-      "when": "editorTextFocus"
-    },{
-      "command": "ampersand.headerFlip",
-      "key": "ctrl+h",
-      "mac": "cmd+h",
-      "when": "editorTextFocus"
-    }],
-
+    "keybindings": [
+      {
+        "command": "ampersand.copyrightHeader",
+        "key": "ctrl+shift+c",
+        "mac": "ctrl+shift+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.importAndRequire",
+        "key": "alt+shift+p",
+        "mac": "ctrl+shift+p",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.importSort",
+        "key": "alt+shift+i",
+        "mac": "ctrl+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.convertToTS",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+;",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.headerFlip",
+        "key": "ctrl+h",
+        "mac": "cmd+h",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ampersand.createTemplate",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "editorTextFocus"
+      }
+    ],
     "commands": [
       {
         "command": "ampersand.importAndRequire",
@@ -76,6 +88,10 @@
       {
         "command": "ampersand.headerFlip",
         "title": "Ampersand Header Flip"
+      },
+      {
+        "command": "ampersand.createTemplate",
+        "title": "Ampersand Create Template"
       },
       {
         "command": "ampersand.breakOnComma",

@@ -16,19 +16,24 @@ let gAlias = {
     CS: {reg: /^([Cc]s)[A-Z].*/, replace:["CS"]},
 };
 
-export async function SortImportsCommand() {
+interface EditUndoOptions {
+  undoStopAfter: boolean;
+  undoStopBefore: boolean;
+}
+
+export async function SortImportsCommand(editUndoOptions?: EditUndoOptions) {
   const curText = vscode.window.activeTextEditor.document.getText().split('\n');
   const importBlock = GetImportLines(curText);
   const addLine = curText[importBlock.range.end.line+1] ? true : false;
 
   SortImports(importBlock.imports);
 
-  vscode.window.activeTextEditor.edit(function(edit) {
+  await vscode.window.activeTextEditor.edit(function(edit) {
     edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
-  });
+  }, editUndoOptions);
 }
 
-export async function InsertImportLine(importLine) {
+export async function InsertImportLine(importLine, editUndoOptions?: EditUndoOptions ) {
   const curText = vscode.window.activeTextEditor.document.getText().split('\n');
   const importBlock = GetImportLines(curText);
   const addLine = curText[importBlock.range.end.line+1] ? true : false;
@@ -37,9 +42,9 @@ export async function InsertImportLine(importLine) {
 
   SortImports(importBlock.imports);
 
-  vscode.window.activeTextEditor.edit(function(edit) {
+  await vscode.window.activeTextEditor.edit(function(edit) {
     edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
-  });
+  }, editUndoOptions);
 }
 
 export async function ImportModule() {
