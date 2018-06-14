@@ -2,7 +2,7 @@
   "name": "morivscodeplugin",
   "displayName": "Ampersand VS Code Plugin",
   "description": "useful plugin for programmers at Ampersand",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "publisher": "moridevelopment",
   "engines": {
     "vscode": "^1.10.0"
@@ -114,7 +114,7 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
-    "moment": "^2.19.3",
+    "moment": "^2.18.1",
     "tslint": "^5.9.1",
     "typescript": "^2.8.3"
   },
