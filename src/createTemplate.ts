@@ -5,6 +5,7 @@
 
 import { InsertImportLine } from './importModule';
 
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -34,6 +35,17 @@ const templateBoilerPlateImports = [
     `import * as Types from 'overlib/shared/types';`,
     `import * as React from 'react';`,
 ];
+
+const templateXMLBoilerPlate = 
+`<Template type='fixed'>
+  <Layout platform='iphone'>
+    <Col classes='fg-1 c-pink-bg'>
+    </Col>
+  </Layout>
+  <Pickers>
+  </Pickers>
+</Template>
+`;
 
 async function insertFixedTemplateIfUnique(newTemplateName: string): Promise<(string | null)> {
     const fixedTemplatesPath = path.join(vscode.workspace.rootPath, 'clientjs/shared/fixedTemplates.ts');
@@ -210,6 +222,26 @@ export async function CreateTemplate() {
         undoStopBefore: false,
         undoStopAfter: false,
     });
+
+
+    // Create the XML doc
+    const curDoc = vscode.window.activeTextEditor.document;
+    const xmlPath = path.join(vscode.workspace.rootPath, `content/fixedTemplates/${templateName}.xml`);
+    let xmlDoc: vscode.TextDocument;
+    try {
+        fs.appendFileSync(xmlPath, ''); // init 
+        xmlDoc = await vscode.workspace.openTextDocument(vscode.Uri.file(xmlPath));
+    } catch (e) {
+        await vscode.window.showErrorMessage('Error creating XML file: ' + e);
+    }
+
+    await vscode.window.showTextDocument(xmlDoc);
+    await vscode.window.activeTextEditor.edit(function (edit) {
+        edit.replace(new vscode.Position(0,0), templateXMLBoilerPlate);
+    });
+    await vscode.window.showTextDocument(curDoc);
+
+
 
     // Import everything we need to
     for (let i = 0; i < templateBoilerPlateImports.length; ++i) {
