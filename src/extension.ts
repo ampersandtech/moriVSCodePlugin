@@ -5,9 +5,10 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { CreateTemplate } from './createTemplate';
 import { HeaderFlip } from './headerFlip';
 import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
-import { SortImportsCommand, ImportModule } from './importModule';
+import { SortImportsCommand, ImportModule, InsertImportLine } from './importModule';
 
 import * as fs from 'fs';
 import * as moment from 'moment';
@@ -87,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    vscode.workspace.onWillSaveTextDocument((e) => {
+    vscode.workspace.onWillSaveTextDocument(async (e) => {
         if (!e.document.fileName.match(/\.[tj]sx?$/)) {
             return;
         }
@@ -119,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (sortIt) {
             const addLine = curText[importBlock.range.end.line+1] ? true : false;
 
-            vscode.window.activeTextEditor.edit(function(edit) {
+            await vscode.window.activeTextEditor.edit(function(edit) {
                 edit.replace(importBlock.range, importBlock.imports.join('\n') + (addLine ? '\n' : ''));
             });
 
@@ -127,13 +128,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    function modifyCurrentDocument(pos: vscode.Position | vscode.Range, content: string) {
+    async function modifyCurrentDocument(pos: vscode.Position | vscode.Range, content: string) {
         if (!vscode.window.activeTextEditor) {
             vscode.window.showErrorMessage('No current document');
             return;
         }
 
-        vscode.window.activeTextEditor.edit(function(edit) {
+        await vscode.window.activeTextEditor.edit(function(edit) {
             edit.replace(pos, content);
         });
     }
@@ -146,6 +147,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     let headerFlip = vscode.commands.registerCommand('ampersand.headerFlip', async() => {
         await HeaderFlip();
+    });
+
+    const createTemplate = vscode.commands.registerCommand('ampersand.createTemplate', async () => {
+        await CreateTemplate();
     });
 
     let coprightHeader = vscode.commands.registerCommand('ampersand.copyrightHeader', async () => {
@@ -408,6 +413,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(importAndRequire);
     context.subscriptions.push(coprightHeader);
     context.subscriptions.push(headerFlip);
+    context.subscriptions.push(createTemplate);
 
     const bracketPairs = {
         '{': '}',
@@ -417,7 +423,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let breakOnComma = vscode.commands.registerCommand('ampersand.breakOnComma', async () => {
         for (const selection of vscode.window.activeTextEditor.selections) {
-            vscode.window.activeTextEditor.edit((edit) => {
+            await vscode.window.activeTextEditor.edit((edit) => {
                 const text = vscode.window.activeTextEditor.document.getText(selection);
                 let newText = text.replace(/,/g, ',\n');
 
