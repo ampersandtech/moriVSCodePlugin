@@ -65,7 +65,6 @@ async function insertFixedTemplateIfUnique(newTemplateName: string): Promise<(st
     const templatesRange = new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0));
 
     const templateLines = ftLines.slice(start, end);
-    console.log(templateLines);
 
     const templates = {};
     for (const templateLine of templateLines) {

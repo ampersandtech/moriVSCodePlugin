@@ -7,12 +7,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import { CreateTemplate } from './createTemplate';
 import { HeaderFlip } from './headerFlip';
-import { AliasLabel, GetFileCache, FindAllFiles, GetImportLines, SortImports } from './helpers';
-import { SortImportsCommand, ImportModule, InsertImportLine } from './importModule';
+import { FindAllFiles, GetImportLines, SortImports } from './helpers';
+import { SortImportsCommand, ImportModule } from './importModule';
 
 import * as fs from 'fs';
 import * as moment from 'moment';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
 
