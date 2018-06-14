@@ -2,10 +2,6 @@
 * Copyright 2018-present Ampersand Technologies, Inc.
 */
 
-/**
-* Copyright 2018-present Ampersand Technologies, Inc.
-*/
-
 
 import { InsertImportLine } from './importModule';
 
@@ -105,8 +101,8 @@ async function insertFixedTemplateIfUnique(newTemplateName: string): Promise<(st
     await vscode.window.activeTextEditor.edit(function (edit) {
         edit.replace(templatesRange, output);
     }, {
-        undoStopBefore: true,
-        undoStopAfter: false,
+        undoStopBefore: false,
+        undoStopAfter: true,
     });
 
     // Show the fixed doc changes but switch back
@@ -164,8 +160,8 @@ async function insertTemplateImportList(newTemplatePath: string): Promise<(strin
     await vscode.window.activeTextEditor.edit(function (edit) {
         edit.replace(importsRange, allImports.join('\n'));
     }, {
-        undoStopBefore: true,
-        undoStopAfter: false,
+        undoStopBefore: false,
+        undoStopAfter: true,
     });
 
     // Show the fixed doc changes but switch back
