@@ -295,47 +295,6 @@ function findConstCallForKey(source: ts.Node, key: string, start: number): ts.No
   }
 }
 
-function findTSConfig(file: string): string {
-  const paths = path.relative(vscode.workspace.rootPath, file).split('/');
-  const configTree = {
-    server: { _config: 'server/tsconfig.json' },
-    clientjs: {
-      _config: 'clientjs/tsconfig.json',
-      shared: {
-        _config: 'clientjs/shared/tsconfig.json',
-      }
-    },
-    overlib: {
-      server: { _config: 'overlib/server/tsconfig.json' },
-      client: { _config: 'overlib/client/tsconfig.json' },
-      shared: { _config: 'overlib/shared/tsconfig.json' },
-    },
-    tests: {
-      ampersand: {
-        clientjs: { _config: 'tests/ampersand/clientjs/tsconfig.json' },
-        server: { _config: 'tests/ampersand/server/tsconfig.json' },
-        shared: { _config: 'tests/ampersand/shared/tsconfig.json' },
-      },
-    },
-  };
-
-  let leaf: any = configTree;
-  let rtn = 'tsconfig.base.json';
-  for (const path of paths) {
-    if (leaf._config) {
-      rtn = leaf._config;
-    }
-
-    if (leaf[path]) {
-      leaf = leaf[path];
-    } else {
-      break;
-    }
-  }
-
-  return rtn;
-}
-
 async function edit_stage3(edit: vscode.TextEditorEdit) {
   const host = ts.createCompilerHost({}, true);
   const source = vscode.window.activeTextEditor.document.getText();
@@ -348,12 +307,10 @@ async function edit_stage3(edit: vscode.TextEditorEdit) {
     const contents = fs.readFileSync(fileName).toString();
     return ts.createSourceFile(fileName, contents, target, true);
   }
-  const opts = ts.readConfigFile(path.join(vscode.workspace.rootPath, findTSConfig(vscode.window.activeTextEditor.document.uri.fsPath)), (file) => {
-    return fs.readFileSync(file).toString()
-  });
-  opts.config.compilerOptions.outDir = null;
-  opts.config.compilerOptions.mapRoot = null
-  const program = ts.createProgram([vscode.window.activeTextEditor.document.fileName], opts.config, host);
+  const compilerOptions = {
+    noEmit: true,
+  }
+  const program = ts.createProgram([vscode.window.activeTextEditor.document.fileName], compilerOptions, host);
   let allDiagnostics = ts.getPreEmitDiagnostics(program).concat(program.emit().diagnostics);
 
   const foundConsts = {};
@@ -373,7 +330,6 @@ async function edit_stage3(edit: vscode.TextEditorEdit) {
     }
   }
 
-  const tsLintConfig = path.join(vscode.workspace.rootPath, 'tslint.json');
   const lintOpts = {
       fix: false,
       formatter: "json",
